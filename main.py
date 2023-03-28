@@ -89,20 +89,20 @@ class User(Character):
                 # 치명타 확률 5/8
                 super_attack = randint(3, 10)
                 if super_attack > 5:
-                    user_damage = self.damage + 500 - r * 10
+                    user_damage = self.damage + 500 - monster.m_r * 2
                     print("\033[33m --치명타 발동!!-- \033[0m")
                 else:
-                    user_damage = randint(1, self.damage) + 100 - r * 10
+                    user_damage = randint(1, self.damage) + 100 - monster.m_r * 2
             else:
                 # 치명타 확률 2/7
                 super_attack = randint(1, 7)
                 if super_attack > 5:
-                    user_damage = self.damage + 100 - r * 10
+                    user_damage = self.damage + 100 - monster.m_r * 2
                     print("\033[33m --치명타 발동!!-- \033[0m")
                 else:
-                    user_damage = randint(1, self.damage) - r * 10
-            print(f"몬스터의 방어력으로 인해 \033[31m{r * 10}만큼 데미지가 감소했습니다.\033[31m")
-            if user_damage < r * 10:
+                    user_damage = randint(1, self.damage) - monster.m_r * 2
+            print(f"몬스터의 방어력으로 인해 \033[31m{monster.m_r * 2}만큼 데미지가 감소했습니다.\033[31m")
+            if user_damage < monster.m_r * 2:
                 print("\033[93m 몬스터가 공격을 회피했습니다. \033[0m")
                 user_damage = 0
             else:
@@ -113,20 +113,24 @@ class User(Character):
                 # 치명타 확률 5/8
                 super_attack = randint(3, 10)
                 if super_attack > 5:
-                    user_damage = self.magic + 500 - mr * 10
+                    user_damage = self.magic + 500 - monster.m_mr * 2
                     print("\033[31m --치명타 발동!!-- \033[0m")
                 else:
-                    user_damage = randint(1, self.magic) + 100 - mr * 10
+                    user_damage = randint(1, self.magic) + 100 - monster.m_mr * 2
             else:
                 # 치명타 확률 2/7
                 super_attack = randint(1, 7)
                 if super_attack > 5:
-                    user_damage = self.magic + 100 - mr * 10
+                    user_damage = self.magic + 100 - monster.m_mr * 2
                     print("\033[31m --치명타 발동!!-- \033[0m")
                 else:
-                    user_damage = randint(1, self.magic) - mr * 10
-            print(f"몬스터의 마법방어력으로 인해 \033[31m{mr * 10}만큼 데미지가 감소했습니다.\033[31m")
-            print(f" \033[33m {self.name}님이 몬스터에게 (마법 공격){user_damage}데미지를 가했습니다. \033[0m ")
+                    user_damage = randint(1, self.magic) - monster.m_mr * 2
+            print(f"몬스터의 방어력으로 인해 \033[31m{monster.m_mr * 2}만큼 데미지가 감소했습니다.\033[31m")
+            if user_damage < monster.m_mr * 2:
+                print(f"\033[93m 몬스터가 공격을 회피했습니다. \n \033[0m")
+                user_damage = 0
+            else:
+                print(f"\033[33m{self.name}님이 (마법공격){user_damage}데미지를 가했습니다.\033[0m \n")
         return user_damage
 
     def u_status(self, m_attack):
@@ -139,10 +143,10 @@ class User(Character):
 class Monster(Character):
     def __init__(self, name, hp, mr, r, damage):
         super().__init__(name)
-        self.hp = hp * level
-        self.m_mr = mr * level
-        self.m_r = r * level
-        self.damage = damage * level
+        self.hp = hp + level * 10
+        self.m_mr = mr + level * 10
+        self.m_r = r + level * 10
+        self.damage = damage + level * 10
 
     def m_info(self):
         print(f"\033[91m-----{self.name} 스탯----- \n"
@@ -175,6 +179,46 @@ class Monster(Character):
         else:
             print('꽥! 죽었닷! 두고보자!!!')
         return m_damage
+
+
+def select_attack():
+    while True:
+        select = input("공격 방법을 선택해 주세요. \n"
+                       "1.물리 공격 \n"
+                       "2.마법 공격 \n"
+                       "3.스탯 확인 \n"
+                       "4.포션 사용 \n")
+        if select == '':
+            print("입력된 값이 없습니다. 다시 입력해주세요. \n")
+        elif not select.isdigit():
+            print("숫자로만 입력해 주세요.")
+        elif int(select) < 1 or int(select) > 4:
+            print('선택 범위를 벗어났습니다.')
+        elif int(select) == 3:
+            user.show_info()
+            monster.m_info()
+            return select_attack()  # 스탯보기 반복시 그만큼 다시 선택 해야하는 오류 -> return 추가
+        elif int(select) == 4:
+            if user.heal_tem > 0:
+                if user.hp < 1000:
+                    print(f"\033[33m-------------------------- \n"
+                          f"200의 체력을 회복합니다. \n"
+                          f"{user.hp} -> {user.hp + 200} \n"
+                          f"--------------------------\033[0m")
+                    user.hp += 200
+                    if user.hp > 1000:
+                        print("-------------------------- \n"
+                              "최대 체력인 1000으로 회복합니다. \n"
+                              "--------------------------\033[0m \n")
+                        user.hp = 1000
+                    user.heal_tem -= 1
+                else:
+                    print("\n \033[31m 이미 체력이 최대입니다.\033[0m \n")
+            else:
+                print("\033[31m 모든 포션을 사용하셨습니다. \033[0m")
+            return select_attack()  # 4번은 공격이 아니므로 선택시 select_attack함수 다시 호출
+        else:
+            return int(select)
 
 
 level = 1
@@ -216,7 +260,7 @@ while True:
               "'아니오'를 선택하면 게임이 종료됩니다.")
         game_start = t.check_answer()
     if game_start == 1:
-        u_attack = t.select_attack()
+        u_attack = select_attack()
         user_damage_give = user.user_attack(u_attack, m_mr, m_r)  # 유저 먼저 공격
         monster.m_damage(user_damage_give)  # 몬스터 데미지에 유저 attack 입력
         attack = monster.m_attack()  # 몬스터 공격
@@ -236,6 +280,7 @@ while True:
         re_attack = t.check_answer()
     else:
         print(f"총 {total}번의 전투 끝에 승리했습니다!\n")
+        print("\n\033[33m 아이템은 5의 배수 레벨에서 얻을 수 있습니다! \033[0m\n")
         print("다음 레벨에 도전 하시겠습니까?\n"
               "'아니오'를 선택하면 게임이 종료됩니다.")
         re_start = t.check_answer()
@@ -253,11 +298,11 @@ while True:
             if monster_receive == 1:
                 monster = Monster('핑핑몬', randint(200, 300), 30, 10, 100)  # hp, mr, r , damage
             elif monster_receive == 2:
-                monster = Monster('디지몬', randint(200, 350), 5, 35, 200)
+                monster = Monster('디지몬', randint(200, 350), 5, 25, 200)
             elif monster_receive == 3:
                 monster = Monster('포켓몬', randint(100, 200), 25, 15, 250)
             else:
-                monster = Monster('구몬', randint(100, 200), 35, 35, 150)
+                monster = Monster('구몬', randint(100, 200), 25, 25, 150)
             monster.m_info()
         else:
             print('게임을 종료합니다.')
