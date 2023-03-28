@@ -24,46 +24,6 @@ def make_power():
         return random_power
 
 
-def select_attack():
-    while True:
-        select = input("공격 방법을 선택해 주세요. \n"
-                       "1.물리 공격 \n"
-                       "2.마법 공격 \n"
-                       "3.스탯 확인 \n"
-                       "4.포션 사용 \n")
-        if select == '':
-            print("입력된 값이 없습니다. 다시 입력해주세요. \n")
-        elif not select.isdigit():
-            print("숫자로만 입력해 주세요.")
-        elif int(select) < 1 or int(select) > 4:
-            print('선택 범위를 벗어났습니다.')
-        elif int(select) == 3:
-            user.show_info()
-            monster.m_info()
-            return select_attack()  # 스탯보기 반복시 그만큼 다시 선택 해야하는 오류 -> return 추가
-        elif int(select) == 4:
-            if user.heal_tem > 0:
-                if user.hp < 1000:
-                    print(f"\033[33m-------------------------- \n"
-                          f"200의 체력을 회복합니다. \n"
-                          f"{user.hp} -> {user.hp + 200} \n"
-                          f"--------------------------\033[0m")
-                    user.hp += 200
-                    if user.hp > 1000:
-                        print("-------------------------- \n"
-                              "최대 체력인 1000으로 회복합니다. \n"
-                              "--------------------------\033[0m \n")
-                        user.hp = 1000
-                    user.heal_tem -= 1
-                else:
-                    print("\n \033[31m 이미 체력이 최대입니다.\033[0m \n")
-            else:
-                print("\033[31m 모든 포션을 사용하셨습니다. \033[0m")
-            return select_attack()  # 4번은 공격이 아니므로 선택시 select_attack함수 다시 호출
-        else:
-            return int(select)
-
-
 # 몬스터 선택
 def make_monster():
     user_monster = input(f"상대할 몬스터를 선택해 주세요. 몬스터는 랜덤의 스텟을 가집니다. \n"
